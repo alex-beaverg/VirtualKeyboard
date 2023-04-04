@@ -1083,7 +1083,7 @@ const Keyboard = {
                             }
                         } else {
 			                if (!this.properties.en) this.properties.value = keyElement.textContent + this.properties.memory;
-			                else this.properties.value = this.properties.capsLock ? key.toUpperCase() + this.properties.memory : key.toLowerCase() + this.properties.memory;
+			                else this.properties.value = this.properties.capsLock || this.properties.shift ? key.toUpperCase() + this.properties.memory : key.toLowerCase() + this.properties.memory;
 			            }
                         setTimeout(() => {
                             document.querySelector(".use-keyboard-input").selectionStart = this.properties.value.length - this.properties.memory.length;
