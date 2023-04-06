@@ -1,3 +1,33 @@
+let isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+if (!isFirefox) {
+    let recognizing;
+    let recognizer = new webkitSpeechRecognition();
+    recognizer.interimResults = false;
+    recognizer.lang = 'en-US';
+    recognizer.continuous = true;
+
+    recognizer.onresult = function (event) {
+        let result = event.results[event.resultIndex];                            
+        if (result.isFinal) {         
+            if (document.querySelector(".use-keyboard-input").selectionStart > 0) {  
+                Keyboard.properties.value = Keyboard.properties.value.substring(0, document.querySelector(".use-keyboard-input").selectionStart) + result[0].transcript + Keyboard.properties.memory;            
+            } else {
+                Keyboard.properties.value = result[0].transcript + Keyboard.properties.memory;
+            }        
+            setTimeout(() => {            
+                Keyboard.properties.selection = Keyboard.properties.value.slice(document.querySelector(".use-keyboard-input").selectionStart, document.querySelector(".use-keyboard-input").selectionEnd);                        
+            });
+            
+            setTimeout(() => {
+                document.querySelector(".use-keyboard-input").selectionStart = Keyboard.properties.value.length - Keyboard.properties.memory.length;
+                document.querySelector(".use-keyboard-input").selectionEnd = Keyboard.properties.value.length - Keyboard.properties.memory.length;     
+            }); 
+            Keyboard._triggerEvent("oninput");      
+        }
+    }; 
+};
+
 const Keyboard = {
     elements: {
         main: null,
@@ -83,11 +113,12 @@ const Keyboard = {
                     keyElement.addEventListener("click", () => {
                         document.querySelector('audio').play();  
                         document.querySelector(".use-keyboard-input").focus();
-                                                                       
-                        this._toggleVoice();                        
-                        if (this.properties.voice) recognizer.start();
-                        else recognizer.stop();
-                        keyElement.classList.toggle("keyboard__key--active3", this.properties.voice);  
+                        if (!isFirefox) {                                               
+                            this._toggleVoice();                        
+                            if (this.properties.voice) recognizer.start();
+                            else recognizer.stop();
+                            keyElement.classList.toggle("keyboard__key--active3", this.properties.voice);
+                        }  
                     });
 
                     
@@ -1086,7 +1117,9 @@ const Keyboard = {
 
     _toggleEn() {        
         this.properties.en = !this.properties.en;
-        recognizer.lang = this.properties.en ? 'en-US' : 'ru-Ru';
+        if (!isFirefox) {
+            recognizer.lang = this.properties.en ? 'en-US' : 'ru-Ru';
+        }
         for (const key of this.elements.keys) {
             if (key.textContent === "EN" || key.textContent === "RU") key.textContent = this.properties.en ? "EN" : "RU"; 
             if (key.textContent === "q" || key.textContent === "й") key.textContent = this.properties.en ? "q" : "й";
@@ -1473,29 +1506,3 @@ document.addEventListener("keyup", function(event) {
 window.addEventListener("DOMContentLoaded", function () {
     Keyboard.init();
 });
-
-let recognizing;
-let recognizer = new webkitSpeechRecognition();
-recognizer.interimResults = false;
-recognizer.lang = 'en-US';
-recognizer.continuous = true;
-
-recognizer.onresult = function (event) {
-    let result = event.results[event.resultIndex];                            
-    if (result.isFinal) {         
-        if (document.querySelector(".use-keyboard-input").selectionStart > 0) {  
-            Keyboard.properties.value = Keyboard.properties.value.substring(0, document.querySelector(".use-keyboard-input").selectionStart) + result[0].transcript + Keyboard.properties.memory;            
-        } else {
-            Keyboard.properties.value = result[0].transcript + Keyboard.properties.memory;
-        }        
-        setTimeout(() => {            
-            Keyboard.properties.selection = Keyboard.properties.value.slice(document.querySelector(".use-keyboard-input").selectionStart, document.querySelector(".use-keyboard-input").selectionEnd);                        
-        });
-        
-        setTimeout(() => {
-            document.querySelector(".use-keyboard-input").selectionStart = Keyboard.properties.value.length - Keyboard.properties.memory.length;
-            document.querySelector(".use-keyboard-input").selectionEnd = Keyboard.properties.value.length - Keyboard.properties.memory.length;     
-        }); 
-        Keyboard._triggerEvent("oninput");      
-    }
-}; 
