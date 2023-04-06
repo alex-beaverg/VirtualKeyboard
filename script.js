@@ -1,30 +1,3 @@
-let recognizing;
-let recognizer = new webkitSpeechRecognition();
-recognizer.interimResults = false;
-recognizer.lang = 'en-US';
-recognizer.continuous = true;
-
-recognizer.onresult = function (event) {
-    let result = event.results[event.resultIndex];                            
-    if (result.isFinal) { 
-        //Keyboard.properties.value += result[0].transcript;
-        if (document.querySelector(".use-keyboard-input").selectionStart > 0) {  
-            Keyboard.properties.value = Keyboard.properties.value.substring(0, document.querySelector(".use-keyboard-input").selectionStart) + result[0].transcript + Keyboard.properties.memory;            
-        } else {
-            Keyboard.properties.value = result[0].transcript + Keyboard.properties.memory;
-        }        
-        setTimeout(() => {            
-            Keyboard.properties.selection = Keyboard.properties.value.slice(document.querySelector(".use-keyboard-input").selectionStart, document.querySelector(".use-keyboard-input").selectionEnd);                        
-        });
-        
-        setTimeout(() => {
-            document.querySelector(".use-keyboard-input").selectionStart = Keyboard.properties.value.length - Keyboard.properties.memory.length;
-            document.querySelector(".use-keyboard-input").selectionEnd = Keyboard.properties.value.length - Keyboard.properties.memory.length;     
-        }); 
-        Keyboard._triggerEvent("oninput");      
-    }
-}; 
-
 const Keyboard = {
     elements: {
         main: null,
@@ -1497,8 +1470,32 @@ document.addEventListener("keyup", function(event) {
     }
 });
 
-
-
 window.addEventListener("DOMContentLoaded", function () {
     Keyboard.init();
 });
+
+let recognizing;
+let recognizer = new webkitSpeechRecognition();
+recognizer.interimResults = false;
+recognizer.lang = 'en-US';
+recognizer.continuous = true;
+
+recognizer.onresult = function (event) {
+    let result = event.results[event.resultIndex];                            
+    if (result.isFinal) {         
+        if (document.querySelector(".use-keyboard-input").selectionStart > 0) {  
+            Keyboard.properties.value = Keyboard.properties.value.substring(0, document.querySelector(".use-keyboard-input").selectionStart) + result[0].transcript + Keyboard.properties.memory;            
+        } else {
+            Keyboard.properties.value = result[0].transcript + Keyboard.properties.memory;
+        }        
+        setTimeout(() => {            
+            Keyboard.properties.selection = Keyboard.properties.value.slice(document.querySelector(".use-keyboard-input").selectionStart, document.querySelector(".use-keyboard-input").selectionEnd);                        
+        });
+        
+        setTimeout(() => {
+            document.querySelector(".use-keyboard-input").selectionStart = Keyboard.properties.value.length - Keyboard.properties.memory.length;
+            document.querySelector(".use-keyboard-input").selectionEnd = Keyboard.properties.value.length - Keyboard.properties.memory.length;     
+        }); 
+        Keyboard._triggerEvent("oninput");      
+    }
+}; 
